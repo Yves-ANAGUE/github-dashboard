@@ -9,7 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::createTableIfNotExists('utilisateurs_github', function (Blueprint $table) {
+        // Sécurité pour ne pas recréer la table si elle existe déjà
+        if (Schema::hasTable('utilisateurs_github')) return;
+
+        Schema::create('utilisateurs_github', function (Blueprint $table) {
             $table->id();
             $table->string('github_id')->unique();
             $table->string('login')->unique();          // Pseudo GitHub
@@ -18,6 +21,7 @@ return new class extends Migration
             $table->string('avatar_url')->nullable();
             $table->text('token_acces');                // Token OAuth chiffré
             $table->boolean('est_donateur')->default(false);
+            $table->rememberToken();                    // Ajouté pour la gestion des sessions
             $table->timestamps();
         });
 

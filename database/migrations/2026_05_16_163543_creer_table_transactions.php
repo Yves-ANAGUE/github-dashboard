@@ -9,7 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::createTableIfNotExists('transactions', function (Blueprint $table) {
+        // Sécurité pour ne pas recréer la table si elle existe déjà
+        if (Schema::hasTable('transactions')) return;
+
+        Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('utilisateur_id')
                   ->constrained('utilisateurs_github')
