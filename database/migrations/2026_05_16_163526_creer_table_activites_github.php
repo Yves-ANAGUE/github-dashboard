@@ -2,14 +2,13 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        // Sécurité pour ne pas recréer la table si elle existe déjà
         if (Schema::hasTable('activites_github')) return;
 
         Schema::create('activites_github', function (Blueprint $table) {
@@ -17,22 +16,19 @@ return new class extends Migration
             $table->foreignId('utilisateur_id')
                   ->constrained('utilisateurs_github')
                   ->onDelete('cascade');
-            $table->string('type_activite');            // 'commits', 'pull_requests', 'issues'
-            // JSONB : payload brut GitHub, flexible et indexable
+            $table->string('type_activite');
             $table->jsonb('payload');
             $table->integer('annee');
-            $table->integer('semaine');                 // Semaine ISO (1-53) pour agrégats
-            $table->timestamps();
-
-            // Contrainte unicité : une activité par type/semaine/an par utilisateur
+            $table->integer('semaine');
             $table->unique(['utilisateur_id', 'type_activite', 'annee', 'semaine']);
+            $table->timestamps();
         });
 
-        // Index GIN sur JSONB : O(log n) pour requêtes @> et ? sur le payload
-        DB::statement('CREATE INDEX idx_activites_payload ON activites_github USING GIN (payload)');
-
-        // Index expression pour filtrer sur un champ JSONB précis — O(log n)
-        DB::statement("CREATE INDEX idx_activites_type ON activites_github (type_activite, annee, semaine)");
+        // Index GIN uniquement sur PostgreSQL — ignoré sur SQLite
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('CREATE INDEX idx_activites_payload ON activites_github USING GIN (payload)');
+            DB::statement('CREATE INDEX idx_activites_type ON activites_github (type_activite, annee, semaine)');
+        }
     }
 
     public function down(): void

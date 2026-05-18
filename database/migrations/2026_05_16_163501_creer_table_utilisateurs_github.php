@@ -2,31 +2,31 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        // Sécurité pour ne pas recréer la table si elle existe déjà
         if (Schema::hasTable('utilisateurs_github')) return;
 
         Schema::create('utilisateurs_github', function (Blueprint $table) {
             $table->id();
             $table->string('github_id')->unique();
-            $table->string('login')->unique();          // Pseudo GitHub
+            $table->string('login')->unique();
             $table->string('nom')->nullable();
             $table->string('email')->nullable();
             $table->string('avatar_url')->nullable();
-            $table->text('token_acces');                // Token OAuth chiffré
+            $table->text('token_acces');
             $table->boolean('est_donateur')->default(false);
-            $table->rememberToken();                    // Ajouté pour la gestion des sessions
+            $table->rememberToken();
             $table->timestamps();
         });
 
-        // Index expression sur github_id pour les lookups OAuth
-        DB::statement('CREATE INDEX idx_utilisateurs_github_id ON utilisateurs_github (github_id)');
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('CREATE INDEX idx_utilisateurs_github_id ON utilisateurs_github (github_id)');
+        }
     }
 
     public function down(): void
