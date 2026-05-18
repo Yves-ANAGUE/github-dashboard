@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('utilisateurs_github', function (Blueprint $table) {
+        Schema::createTableIfNotExists('utilisateurs_github', function (Blueprint $table) {
             $table->id();
             $table->string('github_id')->unique();
             $table->string('login')->unique();          // Pseudo GitHub

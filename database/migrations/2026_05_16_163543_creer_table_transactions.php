@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('transactions', function (Blueprint $table) {
+        Schema::createTableIfNotExists('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('utilisateur_id')
                   ->constrained('utilisateurs_github')
